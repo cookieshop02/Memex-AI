@@ -1,0 +1,9 @@
+# Local Generated Files
+memex_graph2.html
+*.pyc
+__pycache__/
+env/
+.env
+
+# Vector DB storage
+chroma_db/
