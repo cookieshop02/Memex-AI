@@ -136,13 +136,18 @@ class MemexCore:
 
     def query(self, user_query: str) -> str:
         """Executes Hybrid GraphRAG search over both Vector DB & Graph Triplets."""
-        # 1. Vector Search Context
-        vector_results = self.vector_collection.query(query_texts=[user_query], n_results=3)
+        # 1. Vector Search Context with Safety Check
         retrieved_chunks = []
-        if vector_results and "documents" in vector_results and vector_results["documents"]:
-            for doc_list in vector_results["documents"]:
-                retrieved_chunks.extend(doc_list)
-        vector_context = "\n---\n".join(retrieved_chunks) if retrieved_chunks else "No vector context."
+        try:
+            if self.vector_collection.count() > 0:
+                vector_results = self.vector_collection.query(query_texts=[user_query], n_results=3)
+                if vector_results and "documents" in vector_results and vector_results["documents"]:
+                    for doc_list in vector_results["documents"]:
+                        retrieved_chunks.extend(doc_list)
+        except Exception as e:
+            print(f"Vector search skip/warning: {e}")
+            
+        vector_context = "\n---\n".join(retrieved_chunks) if retrieved_chunks else "No vector context retrieved."
 
         # 2. Graph Context
         triplets_summary = []
@@ -150,12 +155,12 @@ class MemexCore:
             triplets_summary.append(
                 f"({edge['source']}) ──[{edge['relation']}]──► ({edge['target']}) | Source: {edge['source_doc']} (Pg {edge['page']})"
             )
-        graph_context = "\n".join(triplets_summary) if triplets_summary else "No graph context."
+        graph_context = "\n".join(triplets_summary) if triplets_summary else "No graph context retrieved."
 
         # 3. Hybrid Synthesis Prompt
         prompt = f"""
         You are Memex AI Core Engine. Answer the user question using BOTH the Vector Context and Knowledge Graph Context.
-        Always cite the Source File/Page when stating facts.
+        Always cite the Source File/Page if available.
 
         --- VECTOR CONTEXT ---
         {vector_context}

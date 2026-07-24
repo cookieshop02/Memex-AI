@@ -49,7 +49,7 @@ with st.sidebar:
     st.header("⚙️ Configuration")
     api_key = st.text_input("Google Gemini API Key", type="password", help="Get key from aistudio.google.com")
     st.markdown("---")
-    st.header("📥 Multimodal Data Ingestion")
+    st.header("📥 Data Ingestion")
     uploaded_files = st.file_uploader("Upload PDF or TXT files", type=["pdf", "txt"], accept_multiple_files=True)
     web_url = st.text_input("Or paste a Web Article URL:")
     process_btn = st.button("🚀 Process Ingestion via Core Engine", type="primary")

@@ -7,3 +7,6 @@ env/
 
 # Vector DB storage
 chroma_db/
+
+test_sdk.py
+memex_sdk1.py

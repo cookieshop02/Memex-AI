@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from typing import List, Optional, Dict, Any
+from typing import List, Dict, Any
 from core.engine import MemexCore
 
 app = FastAPI(
@@ -9,8 +9,16 @@ app = FastAPI(
     version="1.0.0"
 )
 
+# Global Engine Store to persist state across requests
+engines: Dict[str, MemexCore] = {}
+
+def get_engine(api_key: str) -> MemexCore:
+    if api_key not in engines:
+        engines[api_key] = MemexCore(api_key=api_key)
+    return engines[api_key]
+
 # ---------------------------------------------------------
-# REQUEST & RESPONSE SCHEMAS
+# REQUEST SCHEMAS
 # ---------------------------------------------------------
 class ChunkModel(BaseModel):
     source: str
@@ -41,11 +49,11 @@ def ingest_documents(req: IngestRequest):
         raise HTTPException(status_code=400, detail="Gemini API Key is required.")
     
     try:
-        engine = MemexCore(api_key=req.api_key)
+        engine = get_engine(req.api_key)
         chunks_data = [chunk.dict() for chunk in req.chunks]
         graph_result = engine.ingest_documents(chunks_data)
         
-        # Convert sets to lists for JSON serialization
+        # Format nodes dictionary for clean JSON serialization
         formatted_nodes = {}
         for node_name, meta in graph_result["nodes"].items():
             formatted_nodes[node_name] = {
@@ -72,7 +80,7 @@ def query_graphrag(req: QueryRequest):
         raise HTTPException(status_code=400, detail="Gemini API Key is required.")
     
     try:
-        engine = MemexCore(api_key=req.api_key)
+        engine = get_engine(req.api_key)
         answer = engine.query(req.question)
         return {"status": "success", "question": req.question, "answer": answer}
     except Exception as e:

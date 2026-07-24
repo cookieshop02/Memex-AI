@@ -1,5 +1,5 @@
 streamlit # UI ke liye
-
+PyMuPDF
 google-genai #Free Gemini 2.5/3 Flash API ke liye
 lxml_html_clean
 pymupdf (fitz) # High-speed PDF reading ke liye
@@ -9,5 +9,6 @@ trafilatura #Links se pure text extraction ke liye
 fastapi
 uvicorn
 # Local interactive graph processing & visualization ke liye
-networkx 
-pyvis 
+networkx
+pyvis
+trafilatura
